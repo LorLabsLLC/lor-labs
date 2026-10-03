@@ -88,11 +88,18 @@
       .hero { grid-template-columns: 1fr; gap: 48px; }
     }
 
+    .tagline {
+      font-size: clamp(1.25rem, 3vw, 1.6rem);
+      font-weight: 500;
+      line-height: 1.35;
+      text-wrap: balance;
+    }
+
     .rule {
       width: 120px;
       height: 6px;
       background: var(--ink);
-      margin-bottom: 28px;
+      margin: 24px 0 28px;
     }
 
     p {
@@ -115,8 +122,9 @@
     <div class="hero">
       <h1><span>Lor</span> <span>Labs</span> <span>LLC</span></h1>
       <div class="about">
+        <h2 class="tagline">Software for Small to Medium Business</h2>
         <div class="rule" aria-hidden="true"></div>
-        <p>Lor Labs builds software for small to medium businesses. Inventory management, invoicing, reporting, and more, all built to keep your business running smoothly.</p>
+        <p>Inventory management, invoicing, reporting, and more, all built to keep your business running smoothly.</p>
       </div>
     </div>
   </main>
