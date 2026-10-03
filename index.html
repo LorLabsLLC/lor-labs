@@ -21,6 +21,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches && "animate" in Element.prototype) {
+      document.documentElement.classList.add("intro");
+    }
+  </script>
   <style>
     :root {
       --paper: #f2e8d5;
@@ -72,9 +77,24 @@
       text-transform: uppercase;
     }
     /* Each word steps right so the leading L's form a diagonal. */
-    h1 span { display: block; }
-    h1 span:nth-child(2) { margin-left: 0.5em; }
-    h1 span:nth-child(3) { margin-left: 1em; color: var(--rust); }
+    h1 > span { display: block; }
+    h1 > span:nth-child(2) { margin-left: 0.5em; }
+
+    /* Intro: the two L's start as an upside-down pair forming a "T", then
+       flip upright into place (see script). Hidden until fonts load so the
+       measured glyph positions are correct. */
+    .intro h1 { visibility: hidden; }
+    h1 .initial, h1 .rest { display: inline-block; }
+    /* Two-tone L's: the script sets the split gradient once fonts load.
+       Registered so the intro can slide the split from the T's top center
+       to each L's own corner. */
+    @property --split-stop { syntax: "<length>"; inherits: false; initial-value: 0px; }
+    @property --split-angle { syntax: "<angle>"; inherits: false; initial-value: 45deg; }
+    h1 .initial.tinted {
+      color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
 
     /* Title and description sit side by side; they stack on narrow screens. */
     .hero {
@@ -120,7 +140,7 @@
 
   <main>
     <div class="hero">
-      <h1><span>Lor</span> <span>Labs</span> <span>LLC</span></h1>
+      <h1><span><span class="initial">L</span><span class="rest">or</span></span> <span><span class="initial">L</span><span class="rest">abs</span></span></h1>
       <div class="about">
         <h2 class="tagline">Software for Small to Medium Business</h2>
         <div class="rule" aria-hidden="true"></div>
@@ -131,5 +151,174 @@
 
   <footer>&copy; 2026 Lor Labs LLC</footer>
   <div class="stripes" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <script>
+    // Fallback so a slow font never leaves the title hidden.
+    const FONT_WAIT_MS = 2000;
+    const TITLE_FONT = '400 1em "Archivo Black"';
+
+    // Ink geometry of an upright "L" in el's font, in em from the text origin
+    // and baseline: where its outer corner sits, and how thick the stem and
+    // foot are (read off a canvas rendering, since fonts don't report them).
+    function measureL(el) {
+      const style = getComputedStyle(el);
+      const size = 200; // large, so pixel rounding stays negligible
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = size * 2;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.font = `${style.fontWeight} ${size}px ${style.fontFamily}`;
+      const originX = size / 2;
+      const baseline = size * 1.5;
+      ctx.fillText("L", originX, baseline);
+      const { data, width } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const inked = (x, y) => data[(y * width + x) * 4 + 3] > 127;
+
+      const m = ctx.measureText("L");
+      const left = originX - m.actualBoundingBoxLeft;
+      const right = originX + m.actualBoundingBoxRight;
+      const top = baseline - m.actualBoundingBoxAscent;
+      const bottom = baseline + m.actualBoundingBoxDescent;
+
+      let x = Math.round(left) + 1;
+      const midY = Math.round((top + bottom) / 2);
+      while (inked(x, midY)) x++;
+      let y = Math.round(bottom) - 1;
+      const nearRight = Math.round(right) - 2;
+      while (inked(nearRight, y)) y--;
+
+      return {
+        left: (left - originX) / size,
+        bottom: (bottom - baseline) / size,
+        stem: (x - left) / size,
+        foot: (bottom - y) / size,
+      };
+    }
+
+    // The L's ink geometry plus its box size and baseline, all in em. Both
+    // initials share one font, so either one can be measured.
+    function measureInitial(el) {
+      const fontSize = parseFloat(getComputedStyle(el).fontSize);
+      const box = el.getBoundingClientRect();
+      const probe = document.createElement("span");
+      probe.style.display = "inline-block";
+      el.append(probe);
+      const baseline = (probe.getBoundingClientRect().bottom - box.top) / fontSize;
+      probe.remove();
+      return { ...measureL(el), baseline, width: box.width / fontSize, height: box.height / fontSize };
+    }
+
+    // The stem/foot color split of an upright L as a linear-gradient angle
+    // and stop: a line from a point on the L's bottom edge up to its inner
+    // corner. `from` is that point's distance in em from the outer corner;
+    // 0 gives the true diagonal.
+    function splitAt(geo, from) {
+      const run = geo.stem - from;
+      const rise = geo.foot;
+      const length = Math.hypot(run, rise);
+      // Unit normal to the split, pointing into the foot (y grows downward).
+      const nx = rise / length;
+      const ny = run / length;
+      // CSS gradient angles point up at 0deg and right at 90deg.
+      const angle = Math.atan2(nx, -ny) * 180 / Math.PI;
+      // A gradient line runs through the box center, long enough to span the
+      // box; the stop is the split point's projection onto it.
+      const span = geo.width * Math.abs(nx) + geo.height * Math.abs(ny);
+      const x = geo.left + from - geo.width / 2;
+      const y = geo.baseline + geo.bottom - geo.height / 2;
+      return { "--split-angle": `${angle}deg`, "--split-stop": `${x * nx + y * ny + span / 2}em` };
+    }
+
+    // Colors el's "L" with its stem and foot in separate colors, split on the
+    // diagonal through the corner, from outer to inner edge. Positions are in
+    // em so the split stays on the corner as the title resizes. The colors
+    // blend across one device pixel so the split is antialiased like the
+    // glyph's own edges.
+    function tintL(el, geo, stemColor, footColor) {
+      const blend = 0.5 / devicePixelRatio;
+      Object.entries(splitAt(geo, 0)).forEach(([name, value]) => el.style.setProperty(name, value));
+      el.style.backgroundImage = `linear-gradient(var(--split-angle),
+        ${stemColor} calc(var(--split-stop) - ${blend}px), ${footColor} calc(var(--split-stop) + ${blend}px))`;
+      el.classList.add("tinted");
+    }
+
+    // Teal stems with a rust and a mustard foot; in the intro's T these make
+    // the post and the left and right arms.
+    function colorInitials(geo) {
+      const [upper, lower] = document.querySelectorAll("h1 .initial");
+      const palette = getComputedStyle(document.documentElement);
+      const color = (name) => palette.getPropertyValue(name).trim();
+      tintL(upper, geo, color("--teal"), color("--rust"));
+      tintL(lower, geo, color("--teal"), color("--mustard"));
+    }
+
+    function playIntro(geo) {
+      const title = document.querySelector("h1");
+      const [upper, lower] = title.querySelectorAll(".initial");
+      const rests = title.querySelectorAll(".rest");
+
+      // Turned 180° the first L becomes "⅂" (stem on the right); flipped
+      // top-to-bottom the second becomes "Γ" (stem on the left). Laying one
+      // stem exactly over the other at the title's center draws the T.
+      const box = title.getBoundingClientRect();
+      const centerX = box.left + box.width / 2;
+      const centerY = box.top + box.height / 2;
+      const fontSize = parseFloat(getComputedStyle(upper).fontSize);
+      const inkLeft = geo.left * fontSize;
+      const stem = geo.stem * fontSize;
+
+      function offsetTo(el, targetLeft) {
+        const r = el.getBoundingClientRect();
+        return `${targetLeft - r.left}px, ${centerY - (r.top + r.height / 2)}px`;
+      }
+      const upperWidth = upper.getBoundingClientRect().width;
+      const upperStart = offsetTo(upper, centerX - upperWidth + inkLeft + stem / 2);
+      const lowerStart = offsetTo(lower, centerX - inkLeft - stem / 2);
+
+      // While joined, each L shows only its outer half of the shared stem, so
+      // the T reads as one glyph with a single color split at the joint. Both
+      // halves are the right half of the upright L, hence the same clip; they
+      // overlap by a pixel so no seam shows down the middle.
+      const halfStem = `inset(0 0 0 ${inkLeft + stem / 2 - 0.5}px)`;
+
+      const settle = { duration: 900, delay: 700, easing: "cubic-bezier(.65,0,.35,1)", fill: "backwards" };
+      upper.animate([
+        { transform: `translate(${upperStart}) rotate(180deg)` },
+        { transform: "translate(0, 0) rotate(0deg)" },
+      ], settle);
+      lower.animate([
+        { transform: `translate(${lowerStart}) perspective(40em) rotateX(180deg)` },
+        { transform: "translate(0, 0) perspective(40em) rotateX(0deg)" },
+      ], settle);
+      // The teal also starts from the middle of the shared stem, so it rises
+      // to a point at the T's top edge; it slides back to each L's corner as
+      // the hidden half returns.
+      [upper, lower].forEach((l) => l.animate([
+        { clipPath: halfStem, ...splitAt(geo, geo.stem / 2) },
+        { clipPath: "inset(0 0 0 0)", ...splitAt(geo, 0) },
+      ], { duration: 300, delay: settle.delay, easing: "ease-in", fill: "backwards" }));
+
+      // Once each L lands, the rest of its word slides out from behind it:
+      // the clip keeps the text hidden left of the L's right edge.
+      rests.forEach((rest) => rest.animate([
+        { transform: "translateX(-100%)", clipPath: "inset(0 0 0 100%)" },
+        { transform: "translateX(0)", clipPath: "inset(0 0 0 0)" },
+      ], { duration: 600, delay: settle.delay + settle.duration, easing: "cubic-bezier(.22,1,.36,1)", fill: "backwards" }));
+
+      document.documentElement.classList.remove("intro");
+    }
+
+    const fontReady = document.fonts.load(TITLE_FONT).then(() => {
+      const geo = measureInitial(document.querySelector("h1 .initial"));
+      colorInitials(geo);
+      return geo;
+    });
+    if (document.documentElement.classList.contains("intro")) {
+      const timeout = new Promise((resolve) => setTimeout(() => resolve("timeout"), FONT_WAIT_MS));
+      Promise.race([fontReady, timeout]).then((result) => {
+        if (result === "timeout") document.documentElement.classList.remove("intro");
+        else playIntro(result);
+      });
+    }
+  </script>
 </body>
 </html>
