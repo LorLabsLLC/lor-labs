@@ -1,0 +1,49 @@
+<!doctype html>
+<!-- Source for /og-image.png (the link-preview image). Regenerate with the command in CLAUDE.md. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      width: 1200px; height: 630px; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 36px 0;
+      background: #f2e8d5; color: #2b2118;
+    }
+    .stripes { display: grid; gap: 8px; }
+    .stripes span { height: 14px; }
+    .stripes span:nth-child(1) { background: #d9822b; }
+    .stripes span:nth-child(2) { background: #b8462e; }
+    .stripes span:nth-child(3) { background: #2a6f6b; }
+    .content {
+      display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 72px;
+      padding: 0 80px;
+    }
+    h1 {
+      font-family: "Archivo Black", sans-serif; font-weight: 400;
+      font-size: 124px; line-height: 0.95; letter-spacing: -0.02em; text-transform: uppercase;
+    }
+    /* Same diagonal-L stagger as the site heading. */
+    h1 span { display: block; }
+    h1 span:nth-child(2) { margin-left: 0.5em; }
+    h1 span:nth-child(3) { margin-left: 1em; color: #b8462e; }
+    .rule { width: 96px; height: 8px; background: #2b2118; margin-bottom: 28px; }
+    .tagline {
+      font-family: "IBM Plex Mono", monospace; font-size: 30px; line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="stripes"><span></span><span></span><span></span></div>
+  <div class="content">
+    <h1><span>Lor</span> <span>Labs</span> <span>LLC</span></h1>
+    <div>
+      <div class="rule"></div>
+      <div class="tagline">Software for storage maintenance.</div>
+    </div>
+  </div>
+  <div class="stripes"><span></span><span></span><span></span></div>
+</body>
+</html>
