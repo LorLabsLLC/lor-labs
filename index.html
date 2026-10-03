@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lor Labs LLC</title>
+  <meta name="description" content="Lor Labs LLC is a software company specializing in storage maintenance.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23f2e8d5'/><rect y='8' width='32' height='4' fill='%23d9822b'/><rect y='14' width='32' height='4' fill='%23b8462e'/><rect y='20' width='32' height='4' fill='%232a6f6b'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f2e8d5;
+      --ink: #2b2118;
+      --muted: #6b5a48;
+      --mustard: #d9822b;
+      --rust: #b8462e;
+      --teal: #2a6f6b;
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    }
+
+    .stripes {
+      display: grid;
+      gap: 6px;
+      padding: 24px 0;
+    }
+    .stripes span { height: 10px; }
+    .stripes span:nth-child(1) { background: var(--mustard); }
+    .stripes span:nth-child(2) { background: var(--rust); }
+    .stripes span:nth-child(3) { background: var(--teal); }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+
+    .eyebrow {
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: "Archivo Black", Impact, sans-serif;
+      font-weight: 400;
+      font-size: clamp(3rem, 14vw, 9.5rem);
+      line-height: 0.9;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+    }
+    h1 .llc {
+      display: block;
+      margin-top: 0.15em;
+      font-size: 0.3em;
+      letter-spacing: 0.35em;
+      color: var(--rust);
+    }
+
+    .rule {
+      width: 120px;
+      height: 6px;
+      background: var(--ink);
+      margin: 36px 0 28px;
+    }
+
+    p {
+      max-width: 34rem;
+      font-size: clamp(1rem, 2.4vw, 1.15rem);
+      line-height: 1.7;
+    }
+
+    footer {
+      padding: 0 24px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="stripes" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <main>
+    <div class="eyebrow">Software &middot; Storage Maintenance</div>
+    <h1>Lor Labs<span class="llc">LLC</span></h1>
+    <div class="rule" aria-hidden="true"></div>
+    <p>Lor Labs is a software company specializing in storage maintenance. We build dependable tools that keep storage systems clean, healthy, and running for the long haul.</p>
+  </main>
+
+  <footer>&copy; 2026 Lor Labs LLC</footer>
+  <div class="stripes" aria-hidden="true"><span></span><span></span><span></span></div>
+</body>
+</html>
