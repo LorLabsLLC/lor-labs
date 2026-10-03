@@ -82,6 +82,10 @@
     /* Each word steps right so the leading L's form a diagonal. */
     h1 > span { display: block; }
     h1 > span:nth-child(2) { margin-left: 0.5em; margin-left: round(0.5em, 1px); }
+    /* The L's sit in their own spans, so the font's kerning never applies
+       after them. A's diagonal reaches toward the L's foot where O curves
+       away; this matches the closest L–A gap to the L–O one. */
+    h1 > span:nth-child(2) .rest { margin-left: 0.065em; }
 
     /* Intro: the two L's start as an upside-down pair forming a "T", then
        flip upright into place (see script). Hidden until fonts load so the
@@ -112,6 +116,8 @@
     }
     @media (max-width: 900px) {
       .hero { grid-template-columns: 1fr; gap: 48px; }
+      /* Center the title as one block so the stepped L's keep their diagonal. */
+      .hero h1 { justify-self: center; }
     }
 
     .tagline {
